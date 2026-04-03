@@ -1,3 +1,99 @@
+// ---- Tactical Audio Manager (Synthetic SFX) ----
+class AudioManager {
+    constructor() {
+        this.ctx = null;
+        this.masterVolume = 0.2; // Tactical Low-Level
+        this.dangerInterval = null;
+    }
+
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    playKey() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine'; // Smooth click
+        osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
+        gain.gain.setValueAtTime(this.masterVolume * 0.5, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.03);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.03);
+    }
+
+    playError() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine'; // Softer wavy tone
+        osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(this.masterVolume * 0.8, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.2);
+    }
+
+    playSuccess() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        
+        // Multi-tone rewarding chime
+        const frequencies = [440, 554, 880]; // Major triad sequence
+        frequencies.forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.className = 'reward-tone';
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + (i * 0.08));
+            gain.gain.setValueAtTime(this.masterVolume, now + (i * 0.08));
+            gain.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.08) + 0.3);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + (i * 0.08));
+            osc.stop(now + (i * 0.08) + 0.4);
+        });
+    }
+
+    playUI() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+        gain.gain.setValueAtTime(this.masterVolume * 0.6, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+    }
+
+    playDanger() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1000, now);
+        gain.gain.setValueAtTime(this.masterVolume * 0.5, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.1);
+    }
+}
+
+const audio = new AudioManager();
+
 document.addEventListener("DOMContentLoaded", () => {
     // ---- DOM Elements ----
     const scoreDisplay = document.getElementById("score-display");
@@ -143,6 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ---- Survival: Global Countdown ----
+    let lastDangerBeep = 0;
     function startGlobalCountdown() {
         stopGlobalCountdown();
         globalCountdownInterval = setInterval(() => {
@@ -170,8 +267,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const secs = String(Math.floor(totalSec % 60)).padStart(2, '0');
         hudTime.textContent = `${mins}:${secs}`;
 
-        const isDanger = globalTimeMs <= 15000;
-        const isWarning = globalTimeMs <= 30000 && !isDanger;
+        const isDanger = globalTimeMs <= 10000;
+        const isWarning = globalTimeMs <= 20000 && !isDanger;
 
         // Reset classes
         hudTime.classList.remove('warning', 'danger');
@@ -182,6 +279,14 @@ document.addEventListener("DOMContentLoaded", () => {
             hudTime.classList.add('danger');
             hudRightLabel.classList.add('danger');
             hudRightModule.classList.add('danger');
+            
+            // Rhythmic Critical Beep (only in the final 3 seconds)
+            const now = Date.now();
+            const isCritical = globalTimeMs <= 3000;
+            if (isCritical && (now - lastDangerBeep > 600)) {
+                audio.playDanger();
+                lastDangerBeep = now;
+            }
         } else if (isWarning) {
             hudTime.classList.add('warning');
             hudRightLabel.classList.add('warning');
@@ -344,7 +449,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Survival: timeout penalty (-5 seconds)
             if (gameMode === 'survival') {
                 globalTimeMs = Math.max(0, globalTimeMs - 5000);
-                triggerFloatingFeedback('-5s', true, 'penalty-text');
+                triggerFloatingFeedback('-5.0s', true, 'penalty-text');
                 updateSurvivalClock();
             }
         }
@@ -388,7 +493,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function applyPenalty(wrongChar) {
         currentAttack.typos.push(wrongChar); 
-
+        audio.playError();
         // Survival: typo drains global clock
         if (gameMode === 'survival') {
             globalTimeMs = Math.max(0, globalTimeMs - SURVIVAL_TYPO_PENALTY_MS);
@@ -441,6 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (typedChar === expectedChar) {
                 currentAttack.keystrokeLog.push({ char: typedChar, correct: true });
+                audio.playKey();
             } else {
                 currentAttack.keystrokeLog.push({ char: typedChar, correct: false });
                 applyPenalty(typedChar);
@@ -592,6 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         triggerExplosion();
         triggerTextExplosion();
+        audio.playSuccess();
         
         pickNextTarget();
     }
@@ -970,6 +1077,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ---- Button Listeners ----
     restartBtn.addEventListener("click", () => {
+        audio.playUI();
         gameOverPanel.classList.add("hidden");
         
         permanentMarkers.forEach(m => map.removeLayer(m));
@@ -986,6 +1094,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (toggleMapBtn) {
         toggleMapBtn.addEventListener("click", () => {
+            audio.playUI();
             gameOverPanel.classList.toggle("minimized-panel");
             if (gameOverPanel.classList.contains("minimized-panel")) {
                 toggleMapBtn.innerHTML = `SHOW STATS <span style="font-family: monospace;">[ &uarr; ]</span>`;
@@ -997,6 +1106,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (classicModeBtn) {
         classicModeBtn.addEventListener("click", () => {
+            audio.init();
+            audio.playUI();
             startScreen.classList.add("hidden");
             startGame('classic');
         });
@@ -1004,6 +1115,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (survivalModeBtn) {
         survivalModeBtn.addEventListener("click", () => {
+            audio.init();
+            audio.playUI();
             startScreen.classList.add("hidden");
             startGame('survival');
         });
