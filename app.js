@@ -149,34 +149,39 @@ class AudioManager {
     playGameComplete() {
         if (!this.ctx || this.isMuted) return;
         const now = this.ctx.currentTime;
-        const chords = [440, 554.37, 659.25, 880]; // A Major sequence
+        
+        // --- Rhythmic "Uplink Stutter" Jackpot ---
+        // Style: Clean Sines, Rhythmic Pulsing, Solid Resolution
+        
+        const baseNotes = [220, 277, 329]; // Lower A-Major Triad (Serious)
+        const highNotes = [440, 554, 659]; // Mid A-Major Triad
+        
+        // 1. Triple Stutter (The "Build")
+        const rhythms = [0, 0.12, 0.24]; 
+        rhythms.forEach((offset) => {
+            baseNotes.forEach((freq, i) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + offset + (i * 0.03));
+                gain.gain.setValueAtTime(this.masterVolume * 0.6, now + offset + (i * 0.03));
+                gain.gain.exponentialRampToValueAtTime(0.01, now + offset + (i * 0.03) + 0.15);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(now + offset + (i * 0.03)); osc.stop(now + offset + (i * 0.03) + 0.2);
+            });
+        });
 
-        chords.forEach((freq, i) => {
+        // 2. The Final "POW" (Solid Resolution)
+        highNotes.forEach((freq, i) => {
             const osc = this.ctx.createOscillator();
-            const detuneLfo = this.ctx.createOscillator();
-            const detuneGain = this.ctx.createGain();
             const gain = this.ctx.createGain();
-
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, now + (i * 0.2));
-
-            // Wavey detune LFO
-            detuneLfo.frequency.setValueAtTime(4, now); // 4Hz slow wave
-            detuneGain.gain.setValueAtTime(15, now); // 15 cents detune
-            detuneLfo.connect(detuneGain);
-            detuneGain.connect(osc.detune);
-
-            gain.gain.setValueAtTime(0, now + (i * 0.2));
-            gain.gain.linearRampToValueAtTime(this.masterVolume * 0.6, now + (i * 0.2) + 0.1);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.2) + 1.0);
-
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-
-            detuneLfo.start(now + (i * 0.2));
-            osc.start(now + (i * 0.2));
-            detuneLfo.stop(now + (i * 0.2) + 1.0);
-            osc.stop(now + (i * 0.2) + 1.0);
+            osc.frequency.setValueAtTime(freq, now + 0.4 + (i * 0.05));
+            gain.gain.setValueAtTime(0, now + 0.4 + (i * 0.05));
+            gain.gain.linearRampToValueAtTime(this.masterVolume, now + 0.4 + (i * 0.05) + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4 + (i * 0.05) + 0.8);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(now + 0.4 + (i * 0.05)); osc.stop(now + 0.4 + (i * 0.05) + 1.0);
         });
     }
 
@@ -1086,6 +1091,73 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    function triggerJackpotExplosion() {
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        const rhythms = [0, 120, 240, 400]; // ms (Matches audio stutter)
+        
+        rhythms.forEach((delay, step) => {
+            setTimeout(() => {
+                const isFinal = step === 3;
+                const count = isFinal ? 150 : 30; // Massive final burst
+                const particles = [];
+                const types = ['frag-rect', 'frag-sq', 'frag-tri', 'frag-circ', 'frag-ring', 'frag-stripe'];
+                
+                for (let i = 0; i < count; i++) {
+                    const p = document.createElement("div");
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    p.classList.add("data-fragment", type);
+                    
+                    const rand = Math.random();
+                    // --- Elite Palette Logic (Now using Success Green instead of Gold) ---
+                    if (isFinal && rand > 0.75) {
+                        p.style.backgroundColor = '#4ade80'; // Success Green
+                        p.style.boxShadow = '0 0 20px rgba(74, 222, 128, 0.8)';
+                        if (type === 'frag-tri') p.style.borderBottomColor = '#4ade80';
+                        if (type === 'frag-ring') p.style.borderColor = '#4ade80';
+                    } else if (rand > 0.6) {
+                        p.style.backgroundColor = '#ffffff'; // White Spark
+                        p.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.8)';
+                        if (type === 'frag-tri') p.style.borderBottomColor = '#ffffff';
+                        if (type === 'frag-ring') p.style.borderColor = '#ffffff';
+                    } else if (rand > 0.3) {
+                        p.style.backgroundColor = '#0ea5e9'; // Deep Blue
+                        p.style.boxShadow = '0 0 10px rgba(14, 165, 233, 0.5)';
+                        if (type === 'frag-tri') p.style.borderBottomColor = '#0ea5e9';
+                        if (type === 'frag-ring') p.style.borderColor = '#0ea5e9';
+                    } else {
+                        p.style.backgroundColor = '#38bdf8'; // Tactical Cyan
+                        p.style.boxShadow = '0 0 10px rgba(56, 189, 248, 0.5)';
+                        if (type === 'frag-tri') p.style.borderBottomColor = '#38bdf8';
+                        if (type === 'frag-ring') p.style.borderColor = '#38bdf8';
+                    }
+
+                    p.style.left = `${centerX}px`;
+                    p.style.top = `${centerY}px`;
+                    p.style.zIndex = "1000";
+                    explosionContainer.appendChild(p);
+                    particles.push(p);
+                }
+
+                // Professional Vortex Physics
+                anime({
+                    targets: particles,
+                    translateX: () => anime.random(-window.innerWidth/1.5, window.innerWidth/1.5),
+                    translateY: () => anime.random(-window.innerHeight/1.5, window.innerHeight/1.5),
+                    rotate: () => anime.random(-720, 720),
+                    scale: isFinal ? [0, 2.5, 0] : [0, 1.3, 0],
+                    opacity: [
+                        { value: 1, duration: 100 },
+                        { value: 0, duration: isFinal ? 4000 : 1500, delay: 400 }
+                    ],
+                    easing: 'easeOutExpo',
+                    duration: isFinal ? 4500 : 2000,
+                    complete: () => { particles.forEach(p => p.remove()); }
+                });
+            }, delay);
+        });
+    }
+
     // ---- Game State Transitions ----
     function startGame(mode) {
         gameMode = mode;
@@ -1195,6 +1267,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 massiveScore.style.textShadow = '';
                 goScoreLabel.textContent = 'FINAL SCORE';
                 audio.playGameComplete();
+                triggerJackpotExplosion();
 
                 const prevBest = loadHighScore('classic');
                 // Higher is better for Score
