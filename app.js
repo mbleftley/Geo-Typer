@@ -420,6 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentAttack = { name: "", startTime: 0, typos: [] };
     let availableCities = [];
     let permanentMarkers = [];
+    let currentLinkLine = null; // Performance Optimization: track active animated line
 
     // ---- Intelligence Database ----
     const cityDatabase = window.cityDatabase || [];
@@ -604,13 +605,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const randomIndex = Math.floor(Math.random() * availableCities.length);
         currentTarget = availableCities.splice(randomIndex, 1)[0];
         
-        // Draw hack-route from old target
+        // Draw hack-route from old target (Probing/Active state)
         if (oldTarget) {
-            const pathColor = oldTarget.pathColor || '#4ade80';
-            const flightPath = L.polyline([[oldTarget.lat, oldTarget.lng], [currentTarget.lat, currentTarget.lng]], {
-                color: pathColor, weight: 2, className: 'hack-route-line'
+            currentLinkLine = L.polyline([[oldTarget.lat, oldTarget.lng], [currentTarget.lat, currentTarget.lng]], {
+                color: '#38bdf8', // Active Probing Color (Cyan)
+                weight: 2, 
+                className: 'hack-route-line'
             }).addTo(map);
-            permanentMarkers.push(flightPath);
+            permanentMarkers.push(currentLinkLine);
         }
 
         const zoomLevel = 5 + Math.floor(Math.random() * 3);
@@ -711,16 +713,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 className: 'custom-leaflet-icon', 
                 html: `
                     <div class="secured-node-container">
-                        <div class="secured-node-label" style="color: #ef4444">${currentTarget.name}</div>
+                        <div class="secured-node-label" style="color: #ef4444">#${currentAttack.index} ${currentTarget.name}</div>
                         <div class="secured-node node-fatal"></div>
                     </div>
                 `, 
                 iconSize: [60, 40], 
-                iconAnchor: [30, 35] 
+                iconAnchor: [30, 7] 
             })
         }).addTo(map);
         currentTarget.pathColor = '#ef4444';
         permanentMarkers.push(fatalMarker);
+
+        // Performance & Vibe: Keep failed links DASHED and RED to show instability
+        if (currentLinkLine) {
+            currentLinkLine.setStyle({ 
+                color: '#ef4444',
+                className: 'hack-route-line' // Stay animated/dashed
+            });
+        }
 
         if (gameMode === 'classic') {
             // Classic: timeout is game over — end the run immediately
@@ -909,12 +919,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 className: 'custom-leaflet-icon', 
                 html: `
                     <div class="secured-node-container">
-                        <div class="secured-node-label" style="color: ${routeColor}">${currentTarget.name}</div>
+                        <div class="secured-node-label" style="color: ${routeColor}">#${currentAttack.index} ${currentTarget.name}</div>
                         <div class="${nodeClass}"></div>
                     </div>
                 `, 
                 iconSize: [60, 40], 
-                iconAnchor: [30, 35] 
+                iconAnchor: [30, 7] 
             })
         }).addTo(map);
         permanentMarkers.push(securedMarker);
@@ -939,6 +949,15 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             terminal.classList.remove('status-success', 'status-warning');
         }, 1500);
+
+        // Professional Performance Optimization: Solidify the route correctly
+        if (currentLinkLine) {
+            currentLinkLine.setStyle({ 
+                color: routeColor, 
+                dashArray: 'none',
+                className: 'hack-route-solid' // Switch to static solid state
+            });
+        }
 
         triggerExplosion();
         triggerTextExplosion();
