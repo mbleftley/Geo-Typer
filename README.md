@@ -29,7 +29,6 @@ An endurance-based challenge against a degrading system countdown.
 *   **Real-Time Map Telemetry:** Dynamic coordination using `Leaflet.js` to track your global flight paths.
 *   **Tactical HUD:** A glass-morphic, reactive heads-up display that pulses with mission status (Standard, Warning, Danger).
 *   **Mission Log:** Comprehensive post-mission debriefing with sortable metrics (Accuracy, Hack Time, Keystroke Sequence).
-*   **Global Sync:** A live, persistent tracker of all-time missions initiated worldwide.
 
 ---
 

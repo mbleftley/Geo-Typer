@@ -1044,27 +1044,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ---- Live Hit Counter ----
-    async function initHitCounter() {
-        try {
-            // Using a unique namespace for Geo-Typer
-            const response = await fetch('https://api.counterapi.dev/v1/geotyper_mblx/sessions/up');
-            if (response.ok) {
-                const data = await response.json();
-                const display = document.getElementById('hit-count-display');
-                if (display && data.count) {
-                    display.textContent = `${data.count.toLocaleString()} MISSIONS LOGGED WORLDWIDE`;
-                    return;
-                }
-            }
-            throw new Error('Fallback required');
-        } catch (err) {
-            const display = document.getElementById('hit-count-display');
-            if (display) display.textContent = "CITY HOPPER PROTOCOL ACTIVE";
-        }
-    }
-
     // ---- Initialize: Show Best Scores on Start Screen ----
     updateBestDisplays();
-    initHitCounter();
 });
