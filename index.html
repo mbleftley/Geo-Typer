@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEO-TYPER // Global Target Acquisition</title>
+    <meta name="description" content="GEO-TYPER — an arcade-style global city typing game. Race the clock, survive the onslaught, and prove your precision.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="map-viz"></div>
+
+    <div class="ui-layer">
+        <header id="top-hud" class="HUD-top hidden">
+            <div class="hud-module glass-panel mod-left">
+                <div class="hud-item hud-left">
+                    <span class="hud-label">SCORE</span>
+                    <span id="score-display" class="hud-value">0</span>
+                </div>
+            </div>
+            
+            <div class="hud-module glass-panel mod-center">
+                <div class="hud-item hud-center">
+                    <h2>TARGET: <span id="target-name">WAITING</span></h2>
+                    <div class="hud-sub" id="target-country">Scanning for coordinates...</div>
+                </div>
+            </div>
+            
+            <div class="hud-module glass-panel mod-right" id="hud-right">
+                <div class="hud-item hud-right" id="hud-right-block">
+                    <!-- Classic Mode: shows survival time elapsed -->
+                    <span class="hud-label" id="hud-right-label">UPLINK STATUS</span>
+                    <span id="hud-time" class="hud-value">00:00</span>
+                    <!-- Survival Mode: shows cities cleared counter -->
+                    <div id="hud-cities-left" class="hud-sub hidden"></div>
+                    <!-- Classic Mode: shows city progress -->
+                    <div id="hud-classic-progress" class="hud-sub hidden"></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="terminal-container">
+            <div class="glass-panel terminal hidden" id="active-terminal">
+                <div class="input-wrapper">
+                    <div id="typing-overlay" class="typing-overlay"></div>
+                    <input type="text" id="typing-input" autocomplete="off" autofocus spellcheck="false">
+                </div>
+                <div class="terminal-timer-container" id="terminal-timer-element">
+                    <div id="timer-bar-fill" class="timer-bar-fill"></div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- ===================== START / MODE SELECT SCREEN ===================== -->
+        <aside class="game-over-panel" id="start-screen">
+            <div class="sidebar-header" style="padding: 20px 0 10px;">
+                <div class="massive-score" style="letter-spacing: 12px; font-size: 4rem;">GEO-TYPER</div>
+                <div class="score-subtext" id="hit-count-display" style="margin-bottom: 20px; color: var(--accent); letter-spacing: 3px;">[ SYNCING ] WORLDWIDE MISSIONS</div>
+                
+                <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px; font-size: 0.9rem; max-width: 600px; margin-left: auto; margin-right: auto; font-family: var(--font-mono);">
+                    &gt; INSTRUCTION: TYPE THE TARGETED CITY NAMES AS THEY APPEAR.<br>
+                    &gt; PROTOCOL: COMPLETE EACH WORD BEFORE THE RADIUS TIMER EXPIRES.<br>
+                    <span style="color: var(--danger);">&gt; WARNING: ACCURACY IMPACTS BOTH SCORE AND SYSTEM UPTIME.</span>
+                </p>
+
+                <!-- Mode Cards -->
+                <div class="mode-cards">
+                    <!-- Classic Mode -->
+                    <div class="mode-card" id="mode-card-classic">
+                        <div class="mode-card-icon">🎯</div>
+                        <div class="mode-card-title">20-CITY RACE</div>
+                        <div class="mode-card-desc">Standard speed circuit. Clear 20 strategic targets in the shortest time. One mistake is fatal — the mission ends.</div>
+                        <div class="mode-card-best" id="classic-best-display">HIGHSCORE: 0</div>
+                        <button id="classic-mode-btn" class="mode-btn">ENGAGE</button>
+                    </div>
+
+                    <!-- Survival Mode -->
+                    <div class="mode-card mode-card-survival" id="mode-card-survival">
+                        <div class="mode-card-icon">⚡</div>
+                        <div class="mode-card-title">SURVIVAL</div>
+                        <div class="mode-card-desc">Endurance challenge with a global countdown. Earn time bonuses through speed and accuracy. Keep the system alive.</div>
+                        <div class="mode-card-best" id="survival-best-display">BEST TIME: 0:00</div>
+                        <button id="survival-mode-btn" class="mode-btn mode-btn-survival">INITIATE</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="start-footer">
+                <a href="https://buymeacoffee.com/mbleftleyi" target="_blank" style="text-decoration: none;">
+                    <button class="support-btn" style="width: 250px; margin-top: 20px;">☕ BUY ME A COFFEE</button>
+                </a>
+                <div class="dev-attribution">SYSTEM DEVELOPED BY <a href="https://x.com/MBLExperiment" target="_blank" class="dev-link">MBLXPERIMENT</a></div>
+            </div>
+        </aside>
+
+        <!-- ===================== GAME OVER PANEL ===================== -->
+        <aside class="game-over-panel hidden" id="game-over-panel">
+            <button id="toggle-map-btn" class="toggle-map-btn">VIEW MAP <span style="font-family: monospace;">[ _ ]</span></button>
+            
+            <div class="sidebar-header" id="go-header">
+                <!-- New Record Badge -->
+                <div id="new-record-badge" class="new-record-badge hidden">⚡ NEW RECORD ⚡</div>
+                <div id="title-score" class="massive-score">0</div>
+                <div id="go-score-label" class="score-subtext" style="margin-bottom: 30px;">TOTAL SCORE</div>
+            </div>
+            
+            <div class="metrics-grid" id="go-metrics">
+                <div class="metric-box">
+                    <span class="metric-label" id="metric-label-time">TIME PLAYED</span>
+                    <span id="stat-total-time" class="metric-value accent-text">00:00</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">GLOBAL ACCURACY</span>
+                    <span id="stat-fastest-hack" class="metric-value accent-text">--</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">CITIES CLEARED</span>
+                    <span id="stat-total-targets" class="metric-value accent-text">0 / 20</span>
+                </div>
+            </div>
+
+            <div class="mission-log-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-col="index"># <span class="sort-indicator">↕</span></th>
+                            <th class="sortable" data-col="name">WORD <span class="sort-indicator">↕</span></th>
+                            <th class="sortable" data-col="hackTime">TIME <span class="sort-indicator">↕</span></th>
+                            <th class="sortable" data-col="score">SCORE <span class="sort-indicator">↕</span></th>
+                            <th class="sortable" data-col="accuracy">ACCURACY <span class="sort-indicator">↕</span></th>
+                            <th style="letter-spacing: 2px;">KEYSTROKE SEQUENCE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attack-history-body">
+                        <!-- Entries added dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <button id="restart-btn" class="reboot-btn" style="width: 100%; margin-top: 20px;">PLAY AGAIN</button>
+        </aside>
+    </div>
+
+    <!-- Container for AnimeJS Explosions independent of Leaflet Map -->
+    <div id="explosion-container"></div>
+
+    <script src="cities.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
