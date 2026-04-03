@@ -858,14 +858,27 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(timerInterval);
         
         const durationMs = Date.now() - currentAttack.startTime;
-        const remainingMs = Math.max(0, currentTime); // time left on city bar
-
-        // Scoring
-        // Scoring logic (Intelligence + Efficiency)
-        const lengthPoints = currentTarget.name.length * 20; // 20 pts per character (Intelligence Bonus)
-        const speedPoints = Math.max(0, (baseTime - durationMs) / 20); // Each 20ms saved is 1 point (Efficiency Bonus)
+        const lengthPoints = currentTarget.name.length * 20;
+        const speedPoints = Math.max(0, (baseTime - durationMs) / 20);
         const accuracyMult = currentAttack.typos.length === 0 ? 1.5 : Math.max(0.4, 1 - (currentAttack.typos.length * 0.15));
         const roundScore = Math.floor((lengthPoints + speedPoints) * accuracyMult);
+
+        // --- UI & STATE UPDATES (Fired immediately for 'Juice') ---
+        if (gameMode === 'survival') {
+            const hasTypos = currentAttack.typos.length > 0;
+            const bonusMs = Math.floor(currentTime * (hasTypos ? 0.5 : 1.0));
+            const floatingClass = hasTypos ? 'survival-warning-text' : 'survival-text';
+            triggerFloatingFeedback(`+${(bonusMs / 1000).toFixed(1)}s`, true, floatingClass);
+            
+            globalTimeMs += bonusMs;
+            updateSurvivalClock();
+        } else if (gameMode === 'classic') {
+            triggerFloatingFeedback(`+${roundScore}`, false);
+            citiesCleared++;
+            citiesRemaining--;
+            updateClassicHUD();
+        }
+
         score += roundScore;
         animateScoreDisplay(score);
 
@@ -900,26 +913,6 @@ document.addEventListener("DOMContentLoaded", () => {
             })
         }).addTo(map);
         permanentMarkers.push(securedMarker);
-
-        // Mode-specific feedback
-        if (gameMode === 'survival') {
-            const hasTypos = currentAttack.typos.length > 0;
-            const bonusMs = Math.floor(currentTime * (hasTypos ? 0.5 : 1.0));
-            const floatingClass = hasTypos ? 'survival-warning-text' : 'survival-text';
-            
-            globalTimeMs += bonusMs;
-            updateSurvivalClock();
-            
-            // Show TIME as the primary floating RPG text
-            triggerFloatingFeedback(`+${(bonusMs / 1000).toFixed(1)}s`, true, floatingClass);
-        } else if (gameMode === 'classic') {
-            citiesCleared++;
-            citiesRemaining--;
-            updateClassicHUD();
-            
-            // Show SCORE as the primary floating RPG text
-            triggerFloatingFeedback(`+${roundScore}`, false);
-        }
 
         // --- HUD Feedback Juice ---
         const statusClass = currentAttack.typos.length === 0 ? 'status-success' : 'status-warning';
@@ -963,11 +956,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const type = types[Math.floor(Math.random() * types.length)];
             p.classList.add("data-fragment", type);
             
-            // Randomly vary color slightly (Cyan to Emerald)
-            if (Math.random() > 0.5) {
-                p.style.backgroundColor = '#4ade80';
-                p.style.boxShadow = '0 0 10px rgba(74, 222, 128, 0.5)';
-                if (type === 'frag-tri') p.style.borderBottomColor = '#4ade80';
+            // Randomly vary color: Cyan / White / Deep Blue
+            const rand = Math.random();
+            if (rand > 0.7) {
+                p.style.backgroundColor = '#ffffff'; // White highlight
+                p.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.8)';
+                if (type === 'frag-tri') p.style.borderBottomColor = '#ffffff';
+            } else if (rand > 0.4) {
+                p.style.backgroundColor = '#0ea5e9'; // Deep Sky Blue
+                p.style.boxShadow = '0 0 10px rgba(14, 165, 233, 0.5)';
+                if (type === 'frag-tri') p.style.borderBottomColor = '#0ea5e9';
+            } else {
+                p.style.backgroundColor = '#38bdf8'; // Default Cyan
+                p.style.boxShadow = '0 0 10px rgba(56, 189, 248, 0.5)';
+                if (type === 'frag-tri') p.style.borderBottomColor = '#38bdf8';
             }
 
             p.style.left = `${point.x}px`;
@@ -1058,24 +1060,21 @@ document.addEventListener("DOMContentLoaded", () => {
         fct.style.top = `${rect.top}px`;
         explosionContainer.appendChild(fct);
 
-        anime.timeline()
-        .add({
+        // --- JUICE: Smooth Continuous Launch (No Jumps) ---
+        anime({
             targets: fct,
             translateX: '-50%',
-            translateY: [-20, -120],
-            opacity: [0, 1],
-            scale: [0.2, 1.2],
-            easing: 'easeOutElastic(1.4, .6)', // More "boing"
-            duration: 800
-        })
-        .add({
-            targets: fct,
-            translateX: '-50%',
-            translateY: [-120, -250],
-            opacity: [1, 0],
-            scale: [1.2, 0.8],
-            easing: 'easeInBack', // Snappy exit
-            duration: 600,
+            translateY: [0, -300], // Smooth continuous climb
+            opacity: [
+                { value: 1, duration: 600 },
+                { value: 0, duration: 400 } // Fade at the end
+            ],
+            scale: [
+                { value: 1.4, duration: 200, easing: 'easeOutBack' }, // Big pop
+                { value: 0.8, duration: 800 } // Taper off
+            ],
+            easing: 'easeOutQuint',
+            duration: 1000,
             complete: () => fct.remove()
         });
 

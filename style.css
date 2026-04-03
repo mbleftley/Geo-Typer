@@ -711,6 +711,7 @@ input[type="text"] {
     box-shadow: 0 0 15px var(--accent-glow);
     pointer-events: none;
     opacity: 0.9;
+    z-index: 100; /* Confetti stays below the score */
 }
 .frag-rect { width: 8px; height: 3px; }
 .frag-sq { width: 5px; height: 5px; }
@@ -759,7 +760,8 @@ input[type="text"] {
 
 .floating-score-text {
     position: absolute; font-family: var(--font-mono); font-size: 5rem; font-weight: bold; color: var(--type-correct); 
-    text-shadow: 0 0 50px rgba(74,222,128,1), 0 0 20px rgba(255,255,255,0.6); pointer-events: none; z-index: 500; transform: translate(-50%, -50%);
+    text-shadow: 0 0 50px rgba(74,222,128,1), 0 0 20px rgba(255,255,255,0.6), 0 10px 20px rgba(0,0,0,1); 
+    pointer-events: none; z-index: 500; transform: translate(-50%, -50%);
 }
 .floating-score-text.survival-text {
     color: var(--type-correct);
