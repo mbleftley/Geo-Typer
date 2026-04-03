@@ -401,12 +401,44 @@ input[type="text"] {
 }
 
 .mode-btn-survival:hover {
-    box-shadow: 0 0 25px var(--survival-glow);
+    mix-blend-mode: color-dodge;
+    z-index: -1;
 }
 
-/* ============================
-   GAME OVER PANEL
-   ============================ */
+/* ==========================================
+   [ 🔇 ] AUDIO TOGGLE HUD
+   ========================================== */
+.audio-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 1.2rem;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.audio-toggle:hover {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: var(--accent);
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+.audio-toggle.muted {
+    opacity: 0.4;
+    filter: grayscale(1);
+}
+
+/* ==========================================
+   [ 🛡️ ] HUD COMPONENTS
+   ========================================== */
 .game-over-panel {
     text-align: center; padding: 40px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--type-correct);
     width: 1050px; max-width: 96vw; background: rgba(5, 10, 20, 0.95);

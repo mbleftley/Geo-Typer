@@ -4,6 +4,16 @@ class AudioManager {
         this.ctx = null;
         this.masterVolume = 0.2; // Tactical Low-Level
         this.dangerInterval = null;
+        this.isMuted = false;
+    }
+
+    toggleMute() {
+        this.isMuted = !this.isMuted;
+        const icon = document.getElementById('audio-icon');
+        const container = document.getElementById('audio-toggle');
+        if (icon) icon.textContent = this.isMuted ? '🔇' : '🔊';
+        if (container) container.classList.toggle('muted', this.isMuted);
+        return this.isMuted;
     }
 
     init() {
@@ -13,7 +23,7 @@ class AudioManager {
     }
 
     playKey() {
-        if (!this.ctx) return;
+        if (!this.ctx || this.isMuted) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sine'; // Smooth click
@@ -27,7 +37,7 @@ class AudioManager {
     }
 
     playError() {
-        if (!this.ctx) return;
+        if (!this.ctx || this.isMuted) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sine'; // Softer wavy tone
@@ -42,7 +52,7 @@ class AudioManager {
     }
 
     playSuccess() {
-        if (!this.ctx) return;
+        if (!this.ctx || this.isMuted) return;
         const now = this.ctx.currentTime;
         
         // Multi-tone rewarding chime
@@ -63,7 +73,7 @@ class AudioManager {
     }
 
     playUI() {
-        if (!this.ctx) return;
+        if (!this.ctx || this.isMuted) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sine';
@@ -77,7 +87,7 @@ class AudioManager {
     }
 
     playDanger() {
-        if (!this.ctx) return;
+        if (!this.ctx || this.isMuted) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -1092,6 +1102,22 @@ document.addEventListener("DOMContentLoaded", () => {
         startScreen.classList.remove("hidden");
     });
 
+    // Attach listener for the audio toggle
+    const audioToggle = document.getElementById('audio-toggle');
+    if (audioToggle) {
+        audioToggle.addEventListener('click', () => {
+            audio.toggleMute();
+        });
+    }
+
+    // Attach keyboard shortcut [M] for muting
+    document.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'm' && document.activeElement !== typingInput) {
+            audio.toggleMute();
+        }
+    });
+
+    // Attach listener for the map-toggle button
     if (toggleMapBtn) {
         toggleMapBtn.addEventListener("click", () => {
             audio.playUI();
