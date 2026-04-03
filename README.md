@@ -63,8 +63,9 @@ open index.html
 
 ---
 
-## 🎖️ ATTRIBUTION
-**SYSTEM DEVELOPED BY [MBLXPERIMENT](https://x.com/MBLExperiment)**
+## 🎖️ MISSION CREDITS
+**SYSTEM ARCHITECT:** [MBLXPERIMENT](https://x.com/MBLExperiment)  
+**TACTICAL ASSISTANT:** Developed with the support of [Google's Anti-Gravity AI](https://deepmind.google/technologies/anti-gravity/).
 
 > [!NOTE]
 > *This project was built to test high-speed precision and tactical UI responsiveness. All city coordinates are provided for arcade purposes only.*
