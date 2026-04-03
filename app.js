@@ -692,7 +692,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (gameMode === 'survival') {
                 audio.playSurvivalPenalty();
                 globalTimeMs = Math.max(0, globalTimeMs - 5000);
-                triggerFloatingFeedback('-5.0s', true, 'penalty-text');
+                if (globalTimeMs > 0) triggerFloatingFeedback('-5.0s', true, 'penalty-text');
                 updateSurvivalClock();
             }
         }
