@@ -100,6 +100,112 @@ class AudioManager {
         osc.start();
         osc.stop(now + 0.1);
     }
+
+    // ---- Wavey End-Game Sounds ----
+    playGameOver() {
+        if (!this.ctx || this.isMuted) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const lfo = this.ctx.createOscillator();
+        const lfoGain = this.ctx.createGain();
+        const gain = this.ctx.createGain();
+
+        // Deep descending sweep
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 1.5);
+
+        // LFO for "wavey" wobble
+        lfo.type = 'sine';
+        lfo.frequency.setValueAtTime(8, now); // 8Hz wobble
+        lfoGain.gain.setValueAtTime(30, now); // 30Hz pitch deviation
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(this.masterVolume, now + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        lfo.start(now);
+        osc.start(now);
+        lfo.stop(now + 1.5);
+        osc.stop(now + 1.5);
+    }
+
+    playGameComplete() {
+        if (!this.ctx || this.isMuted) return;
+        const now = this.ctx.currentTime;
+        const chords = [440, 554.37, 659.25, 880]; // A Major sequence
+
+        chords.forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const detuneLfo = this.ctx.createOscillator();
+            const detuneGain = this.ctx.createGain();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + (i * 0.2));
+
+            // Wavey detune LFO
+            detuneLfo.frequency.setValueAtTime(4, now); // 4Hz slow wave
+            detuneGain.gain.setValueAtTime(15, now); // 15 cents detune
+            detuneLfo.connect(detuneGain);
+            detuneGain.connect(osc.detune);
+
+            gain.gain.setValueAtTime(0, now + (i * 0.2));
+            gain.gain.linearRampToValueAtTime(this.masterVolume * 0.6, now + (i * 0.2) + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.2) + 1.0);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            detuneLfo.start(now + (i * 0.2));
+            osc.start(now + (i * 0.2));
+            detuneLfo.stop(now + (i * 0.2) + 1.0);
+            osc.stop(now + (i * 0.2) + 1.0);
+        });
+    }
+
+    playSurvivalEnd() {
+        if (!this.ctx || this.isMuted) return;
+        const now = this.ctx.currentTime;
+        const duration = 2.5;
+        
+        // --- Layer 2: "Achievement Shimmer" (Rewarding 3-Tone Triad) ---
+        const frequencies = [329.63, 415.30, 493.88]; // E Major Triad (E3, G#3, B3)
+        
+        frequencies.forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const tremolo = this.ctx.createOscillator();
+            const tremoloGain = this.ctx.createGain();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+
+            // "Wavey" Tremolo
+            tremolo.type = 'sine';
+            tremolo.frequency.setValueAtTime(3 + i, now); 
+            tremoloGain.gain.setValueAtTime(0.3, now);
+            tremolo.connect(tremoloGain);
+            tremoloGain.connect(osc.frequency); 
+
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(this.masterVolume * 0.4, now + 0.1 + (i * 0.1));
+            gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            tremolo.start(now);
+            osc.start(now);
+            tremolo.stop(now + duration);
+            osc.stop(now + duration);
+        });
+    }
 }
 
 const audio = new AudioManager();
@@ -914,7 +1020,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (reason === 'completed') {
                 massiveScore.style.color = '';     // clear fail styling
                 massiveScore.style.textShadow = '';
-                goScoreLabel.textContent = 'FINAL REWARD';
+                goScoreLabel.textContent = 'FINAL SCORE';
+                audio.playGameComplete();
 
                 const prevBest = loadHighScore('classic');
                 // Higher is better for Score
@@ -927,6 +1034,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 massiveScore.style.color = 'var(--danger)';
                 massiveScore.style.textShadow = '0 0 25px rgba(239,68,68,0.6)';
                 goScoreLabel.textContent = 'SIGNAL LOST';
+                audio.playGameOver();
             }
 
             // First stat: Time Played
@@ -942,9 +1050,12 @@ document.addEventListener("DOMContentLoaded", () => {
             massiveScore.style.color = 'var(--type-correct)';
             goScoreLabel.textContent = 'TIME SURVIVED';
             
-            // Sub-stat Box 1: Reward Score (points)
-            statTotalTime.closest('.metric-box').querySelector('.metric-label').textContent = 'REWARD SCORE';
-            statTotalTime.textContent = score.toLocaleString();
+            // Unique survival exhaustion sound
+            audio.playSurvivalEnd();
+
+            // First stat Box 1: Total Targets (integer)
+            statTotalTargets.closest('.metric-box').querySelector('.metric-label').textContent = 'TOTAL TARGETS';
+            statTotalTargets.textContent = attackHistory.filter(a => !a.failed).length.toLocaleString();
 
             const prevBest = loadHighScore('survival');
             if (prevBest === null || totalAlive > prevBest) {
