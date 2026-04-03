@@ -457,9 +457,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const survivalBest = loadHighScore('survival');
         if (survivalBest !== null) {
-            survivalBestDisplay.textContent = `BEST TIME: ${formatSeconds(survivalBest)}`;
+            survivalBestDisplay.textContent = `HIGHSCORE: ${Math.floor(survivalBest).toLocaleString()}`;
         } else {
-            survivalBestDisplay.textContent = `BEST TIME: 0:00`;
+            survivalBestDisplay.textContent = `HIGHSCORE: 0`;
         }
     }
 
@@ -1287,25 +1287,28 @@ document.addEventListener("DOMContentLoaded", () => {
             statTotalTime.closest('.metric-box').querySelector('.metric-label').textContent = 'TIME PLAYED';
             statTotalTime.textContent = formatSeconds(totalSec);
         } else if (gameMode === 'survival') {
-            // Survival: time survived is the hero metric
-            const totalAlive = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
-            
-            // Top Massive Display: Survival Time (Green)
+            // Survival: score is now the hero metric
             massiveScore.className = 'massive-score';
-            massiveScore.textContent = formatTime(totalAlive * 1000);
+            massiveScore.textContent = score.toLocaleString();
             massiveScore.style.color = 'var(--type-correct)';
-            goScoreLabel.textContent = 'TIME SURVIVED';
+            massiveScore.style.textShadow = '';
+            goScoreLabel.textContent = 'TOTAL SCORE';
             
             // Unique survival exhaustion sound
             audio.playSurvivalEnd();
 
-            // First stat Box 1: Total Targets (integer)
+            // Metric Box 1: Time Survived (Secondary)
+            const totalAlive = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
+            statTotalTime.closest('.metric-box').querySelector('.metric-label').textContent = 'TIME SURVIVED';
+            statTotalTime.textContent = formatTime(totalAlive * 1000);
+
+            // Metric Box 2: Cities Linked
             statTotalTargets.closest('.metric-box').querySelector('.metric-label').textContent = 'CITIES LINKED';
-            statTotalTargets.textContent = attackHistory.filter(a => !a.failed).length.toLocaleString();
 
             const prevBest = loadHighScore('survival');
-            if (prevBest === null || totalAlive > prevBest) {
-                saveHighScore('survival', totalAlive);
+            // Higher is better for Score
+            if (prevBest === null || score > prevBest) {
+                saveHighScore('survival', score);
                 isNewRecord = true;
             }
         }
