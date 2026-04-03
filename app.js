@@ -574,6 +574,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ---- Game Loop: Pick Target ----
     function pickNextTarget() {
+        if (targetMarker) {
+            map.removeLayer(targetMarker);
+            targetMarker = null;
+        }
+
         // Classic mode: check if run is done before picking next
         if (gameMode === 'classic' && citiesRemaining <= 0) {
             triggerEndScreen('completed');
@@ -590,11 +595,6 @@ document.addEventListener("DOMContentLoaded", () => {
         typingInput.disabled = true;
         typingOverlay.innerHTML = ""; 
         timerFill.style.opacity = "0";
-
-        if (targetMarker) {
-            map.removeLayer(targetMarker);
-            targetMarker = null;
-        }
 
         // Replenish pool if empty
         if (availableCities.length === 0) {
