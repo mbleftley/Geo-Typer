@@ -327,7 +327,7 @@ window.cityDatabase = [
     // INDONESIA
     { name: "JAKARTA", country: "INDONESIA", lat: -6.2088, lng: 106.8456 },
     { name: "SURABAYA", country: "INDONESIA", lat: -7.2504, lng: 112.7688 },
-    { name: "BALI", country: "INDONESIA", lat: -8.4095, lng: 115.1889 },
+    { name: "DENPASAR", country: "INDONESIA", lat: -8.4095, lng: -115.1889 },
 
     // THAILAND
     { name: "BANGKOK", country: "THAILAND", lat: 13.7563, lng: 100.5018 },
@@ -466,6 +466,6 @@ window.cityDatabase = [
     { name: "CHRISTCHURCH", country: "NEW ZEALAND", lat: -43.5320, lng: 172.6362 },
 
     // OTHERS (Oceania)
-    { name: "FIJI", country: "FIJI", lat: -17.7134, lng: 178.0650 },
+    { name: "SUVA", country: "FIJI", lat: -17.7134, lng: 178.0650 },
     { name: "PORT MORESBY", country: "PAPUA NEW GUINEA", lat: -9.4431, lng: 147.1803 }
 ];
