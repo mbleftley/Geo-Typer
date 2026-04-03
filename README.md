@@ -2,6 +2,7 @@
 ### TACTICAL GLOBAL COORDINATE INFILTRATION INTERFACE
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-38bdf8.svg)](https://opensource.org/licenses/MIT)
+[![Live Demo](https://img.shields.io/badge/Live_Deployment-Access_Interface-4ade80.svg)](https://mbleftley.github.io/Geo-Typer/)
 [![Mission Status](https://img.shields.io/badge/Mission_Status-Operational-4ade80.svg)](#)
 
 **GEO-TYPER** is a high-intensity, arcade-style typing challenge that transforms global geography into a tactical data-entry mission. 
@@ -51,10 +52,10 @@ The system requires no backend infrastructure. Simply clone and execute `index.h
 
 ```bash
 # Clone the repository
-git clone https://github.com/mbleftley/GeoTyper.git
+git clone https://github.com/mbleftley/Geo-Typer.git
 
 # Navigate to the mission sector
-cd GeoTyper
+cd Geo-Typer
 
 # Initiate the interface
 open index.html
