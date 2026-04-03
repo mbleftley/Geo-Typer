@@ -312,10 +312,10 @@ document.addEventListener("DOMContentLoaded", () => {
         hudRightModule.classList.remove('warning', 'danger');
 
         if (mode === 'classic') {
-            hudRightLabel.textContent = 'CITY';
+            hudRightLabel.textContent = 'CITIES LINKED';
             hudRightLabel.className = 'hud-label';
             hudTime.className = 'hud-value';
-            hudTime.textContent = `1 / ${CLASSIC_CITY_COUNT}`;
+            hudTime.textContent = `00 / ${CLASSIC_CITY_COUNT}`;
             hudClassicProgress.classList.add('hidden');
             hudCitiesLeft.classList.add('hidden');
         } else if (mode === 'survival') {
@@ -329,9 +329,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateClassicHUD() {
-        const current = citiesCleared + 1;
+        const current = citiesCleared;
         const total = CLASSIC_CITY_COUNT;
-        hudTime.textContent = `${Math.min(current, total)} / ${total}`;
+        hudTime.textContent = `${current.toString().padStart(2, '0')} / ${total}`;
     }
 
     // ---- Game Loop: Pick Target ----

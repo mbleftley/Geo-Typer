@@ -61,12 +61,12 @@
         </main>
         
         <!-- ===================== START / MODE SELECT SCREEN ===================== -->
-        <aside class="game-over-panel" id="start-screen">
-            <div class="sidebar-header" style="padding: 20px 0 10px;">
-                <div class="massive-score" style="letter-spacing: 12px; font-size: 4rem;">GEO-TYPER</div>
-                <div class="score-subtext" style="margin-bottom: 20px; color: var(--accent); letter-spacing: 3px;">CITY HOPPER PROTOCOL ACTIVE</div>
+        <aside class="game-over-panel panel-with-logo" id="start-screen">
+            <div class="sidebar-header" style="padding: 0;">
+                <img src="favicon.png" alt="Geo-Typer Logo" class="main-logo">
                 
-                <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px; font-size: 0.9rem; max-width: 600px; margin-left: auto; margin-right: auto; font-family: var(--font-mono);">
+                
+                <p class="panel-instructions">
                     &gt; INSTRUCTION: TYPE THE TARGETED CITY NAMES AS THEY APPEAR.<br>
                     &gt; PROTOCOL: COMPLETE EACH WORD BEFORE THE RADIUS TIMER EXPIRES.<br>
                     <span style="color: var(--danger);">&gt; WARNING: ACCURACY IMPACTS BOTH SCORE AND SYSTEM UPTIME.</span>
@@ -78,7 +78,7 @@
                     <div class="mode-card" id="mode-card-classic">
                         <div class="mode-card-icon">🎯</div>
                         <div class="mode-card-title">20-CITY RACE</div>
-                        <div class="mode-card-desc">Standard speed circuit. Clear 20 strategic targets in the shortest time. One mistake is fatal — the mission ends.</div>
+                        <div class="mode-card-desc">Fastest clear of 20 strategic targets. One mistake ends the mission.</div>
                         <div class="mode-card-best" id="classic-best-display">HIGHSCORE: 0</div>
                         <button id="classic-mode-btn" class="mode-btn">ENGAGE</button>
                     </div>
@@ -87,7 +87,7 @@
                     <div class="mode-card mode-card-survival" id="mode-card-survival">
                         <div class="mode-card-icon">⚡</div>
                         <div class="mode-card-title">SURVIVAL</div>
-                        <div class="mode-card-desc">Endurance challenge with a global countdown. Earn time bonuses through speed and accuracy. Keep the system alive.</div>
+                        <div class="mode-card-desc">Master speed and accuracy against a global countdown to stay alive.</div>
                         <div class="mode-card-best" id="survival-best-display">BEST TIME: 0:00</div>
                         <button id="survival-mode-btn" class="mode-btn mode-btn-survival">INITIATE</button>
                     </div>
@@ -123,7 +123,7 @@
                     <span id="stat-fastest-hack" class="metric-value accent-text">--</span>
                 </div>
                 <div class="metric-box">
-                    <span class="metric-label">CITIES CLEARED</span>
+                    <span class="metric-label">CITIES LINKED</span>
                     <span id="stat-total-targets" class="metric-value accent-text">0 / 20</span>
                 </div>
             </div>

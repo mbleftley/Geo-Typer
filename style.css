@@ -27,6 +27,27 @@ body {
     overflow: hidden;
 }
 
+.main-logo {
+    width: 200px;
+    height: 200px;
+    border-radius: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 0 40px var(--accent-glow);
+    border: 2px solid var(--accent);
+    object-fit: cover;
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    animation: logoGlow 4s infinite ease-in-out;
+}
+
+@keyframes logoGlow {
+    0%, 100% { box-shadow: 0 0 40px var(--accent-glow); transform: translateX(-50%) scale(1); }
+    50% { box-shadow: 0 0 70px var(--accent-glow); transform: translateX(-50%) scale(1.03); }
+}
+
 #map-viz {
     position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1;
 }
@@ -136,8 +157,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
-    margin-top: 25px;
+    gap: 10px;
+    margin-top: 15px;
     padding-top: 15px;
     border-top: 1px solid rgba(56, 189, 248, 0.1);
     width: 100%;
@@ -319,11 +340,11 @@ input[type="text"] {
     background: rgba(5, 15, 35, 0.9);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
-    padding: 35px 30px;
+    padding: 20px 25px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     text-align: center;
     transition: border-color 0.3s, box-shadow 0.3s, transform 0.2s;
     cursor: default;
@@ -345,13 +366,13 @@ input[type="text"] {
 }
 
 .mode-card-icon {
-    font-size: 3rem;
+    font-size: 2.2rem;
     line-height: 1;
 }
 
 .mode-card-title {
     font-family: var(--font-mono);
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     letter-spacing: 5px;
     color: var(--accent);
 }
@@ -381,28 +402,31 @@ input[type="text"] {
 
 .mode-btn {
     width: 100%;
-    padding: 18px;
+    padding: 14px;
     font-size: 1.1rem;
-    letter-spacing: 4px;
-    background: var(--accent);
+    letter-spacing: 6px;
+    background: linear-gradient(90deg, var(--accent) 0%, #7dd3fc 100%);
     color: #020205;
     border: none;
     border-radius: 10px;
     margin-top: 5px;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
 }
 
 .mode-btn:hover {
-    box-shadow: 0 0 25px var(--accent-glow);
-    transform: scale(1.02);
+    filter: brightness(1.1);
+    box-shadow: 0 0 30px var(--accent-glow);
+    transform: scale(1.02) translateY(-2px);
 }
 
 .mode-btn-survival {
-    background: var(--survival);
+    background: linear-gradient(90deg, var(--survival) 0%, #fbbf24 100%);
 }
 
 .mode-btn-survival:hover {
-    mix-blend-mode: color-dodge;
-    z-index: -1;
+    box-shadow: 0 0 30px var(--survival-glow);
 }
 
 /* ==========================================
@@ -440,12 +464,30 @@ input[type="text"] {
    [ 🛡️ ] HUD COMPONENTS
    ========================================== */
 .game-over-panel {
-    text-align: center; padding: 40px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--type-correct);
-    width: 1050px; max-width: 96vw; background: rgba(5, 10, 20, 0.95);
+    text-align: center; padding: 30px; padding-top: 40px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--accent);
+    width: 950px; max-width: 96vw; background: rgba(5, 10, 20, 0.95);
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     display: flex; flex-direction: column; z-index: 50; max-height: 90vh;
-    overflow: hidden; pointer-events: auto;
+    overflow: visible; pointer-events: auto;
     transition: all 0.4s ease;
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.1);
+}
+
+.panel-with-logo {
+    padding-top: 150px;
+}
+
+.panel-instructions {
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    letter-spacing: 1px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0.8;
 }
 
 /* MINIMIZED STATE LOGIC - Maps to VIEW MAP button */
@@ -502,11 +544,25 @@ input[type="text"] {
 }
 
 .massive-score { 
-    font-size: 6.5rem; font-weight: 900; line-height: 1; letter-spacing: -2px; 
-    margin-bottom: 10px; text-shadow: 0 0 30px var(--accent-glow); 
+    font-size: 7.5rem; font-weight: 900; line-height: 1; letter-spacing: -2px; 
+    margin-bottom: 15px; text-shadow: 0 0 40px var(--accent-glow); 
     font-family: var(--font-mono); color: var(--type-correct); 
+    animation: glowScore 2s infinite alternate ease-in-out;
 }
-.score-subtext { color: var(--text-secondary); letter-spacing: 15px; font-size: 1.2rem; font-family: var(--font-mono); }
+
+@keyframes glowScore {
+    from { text-shadow: 0 0 30px var(--accent-glow); }
+    to { text-shadow: 0 0 60px var(--accent-glow); }
+}
+
+.score-subtext { 
+    color: var(--text-secondary); 
+    letter-spacing: 20px; 
+    font-size: 1.4rem; 
+    font-family: var(--font-mono); 
+    text-transform: uppercase;
+    opacity: 0.7;
+}
 
 .mission-log-container {
     flex: 1;
@@ -543,15 +599,24 @@ input[type="text"] {
 .ribbon-wrong { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
 
 .reboot-btn {
-    background: var(--accent); color: #020617; border: none; padding: 18px; border-radius: 8px; font-size: 1.2rem; cursor: pointer;
-    font-family: var(--font-mono); letter-spacing: 8px; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-top: 30px; width: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, #7dd3fc 100%); 
+    color: #020617; 
+    border: none; 
+    padding: 16px; 
+    border-radius: 8px; 
+    font-size: 1.3rem; 
+    cursor: pointer;
+    font-family: var(--font-mono); 
+    letter-spacing: 8px; 
+    font-weight: 900; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 25px; 
+    width: 100%;
 }
 .reboot-btn:hover { 
-    background: #7dd3fc; 
+    filter: brightness(1.1);
     box-shadow: 0 0 40px var(--accent-glow); 
-    color: #000;
-    transform: scale(1.02); 
+    transform: scale(1.02) translateY(-2px); 
 }
 
 .mission-log-title { color: var(--text-secondary); text-align: left; font-size: 0.8rem; margin: 15px 0 5px 0; font-family: var(--font-mono); letter-spacing: 3px;}
