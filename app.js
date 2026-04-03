@@ -950,13 +950,17 @@ document.addEventListener("DOMContentLoaded", () => {
             terminal.classList.remove('status-success', 'status-warning');
         }, 1500);
 
-        // Professional Performance Optimization: Solidify the route correctly
+        // Robust Solidification: Force style change and class swap
         if (currentLinkLine) {
             currentLinkLine.setStyle({ 
                 color: routeColor, 
-                dashArray: 'none',
-                className: 'hack-route-solid' // Switch to static solid state
+                dashArray: '' // Standard Leaflet solid state
             });
+            // Surgical class swap to kill the 'dashFlow' animation instantly
+            if (currentLinkLine._path) {
+                L.DomUtil.removeClass(currentLinkLine._path, 'hack-route-line');
+                L.DomUtil.addClass(currentLinkLine._path, 'hack-route-solid');
+            }
         }
 
         triggerExplosion();
