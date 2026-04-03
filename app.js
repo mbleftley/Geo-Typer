@@ -5,6 +5,10 @@ class AudioManager {
         this.masterVolume = 0.2; // Tactical Low-Level
         this.dangerInterval = null;
         this.isMuted = false;
+        this.musicNodes = []; // Track active music layers
+        this.schedulerTimer = null; // High-precision look-ahead timer
+        this.nextNoteTime = 0;
+        this.noteIndex = 0;
     }
 
     toggleMute() {
@@ -13,6 +17,13 @@ class AudioManager {
         const container = document.getElementById('audio-toggle');
         if (icon) icon.textContent = this.isMuted ? '🔇' : '🔊';
         if (container) container.classList.toggle('muted', this.isMuted);
+        
+        if (this.isMuted) {
+            this.stopMusic();
+        } else if (typeof isGameOver !== 'undefined' && !isGameOver && typeof currentTarget !== 'undefined' && currentTarget) {
+            this.startMusic();
+        }
+        
         return this.isMuted;
     }
 
@@ -206,7 +217,125 @@ class AudioManager {
             osc.stop(now + duration);
         });
     }
+
+    // ---- Synthetic Music Loop (V3.1: High-Precision Scheduler) ----
+    startMusic() {
+        if (!this.ctx || this.isMuted) return;
+        this.stopMusic();
+
+        this.musicActive = true;
+        this.nextNoteTime = this.ctx.currentTime;
+        this.noteIndex = 0;
+        const lookahead = 0.1; // Check 0.1s ahead
+        const interval = 25.0; // Check every 25ms
+
+        const rootFreqs = [220, 246.94, 261.63, 329.63]; // A3, B3, C4, E4 (Tactical 4-note loop)
+
+        this.schedulerTimer = setInterval(() => {
+            while (this.nextNoteTime < this.ctx.currentTime + lookahead) {
+                this.scheduleNote(this.noteIndex, this.nextNoteTime, rootFreqs);
+                this.nextNoteTime += 0.5; // Next beat (every 0.5s)
+                this.noteIndex++;
+            }
+        }, interval);
+        
+        // Deep Sub Pulse (Root only - Persistent)
+        const subOsc = this.ctx.createOscillator();
+        const subGain = this.ctx.createGain();
+        subOsc.type = 'sine';
+        subOsc.frequency.setValueAtTime(55, this.ctx.currentTime);
+        subGain.gain.setValueAtTime(0, this.ctx.currentTime);
+        subGain.gain.linearRampToValueAtTime(0.02, this.ctx.currentTime + 2);
+        subOsc.connect(subGain);
+        subGain.connect(this.ctx.destination);
+        subOsc.start();
+        this.musicNodes.push({ osc: subOsc, gain: subGain });
+    }
+
+    scheduleNote(index, startTime, freqs) {
+        if (!this.musicActive) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freqs[index % freqs.length], startTime);
+
+        filter.type = 'lowpass';
+        filter.Q.setValueAtTime(10, startTime);
+        const lfoVal = Math.sin(startTime * 0.5); 
+        filter.frequency.setValueAtTime(400 + (lfoVal * 200), startTime);
+
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.04, startTime + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.8);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + 1.0);
+
+        // Track node and prune after completion to prevent memory leaks
+        const node = { osc, gain };
+        this.musicNodes.push(node);
+        setTimeout(() => {
+            const i = this.musicNodes.indexOf(node);
+            if (i > -1) this.musicNodes.splice(i, 1);
+        }, 2000);
+    }
+
+    playSurvivalPenalty() {
+        if (!this.ctx || this.isMuted) return;
+        const now = this.ctx.currentTime;
+        
+        // 3-Tone Descending "Data Loss" Chime (Deeper & Grittier)
+        const freqs = [440.00, 293.66, 220.00]; // A4, D4, A3 (One octave lower than before)
+        freqs.forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + (i * 0.1));
+            
+            gain.gain.setValueAtTime(this.masterVolume * 0.8, now + (i * 0.1));
+            gain.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.1) + 0.4);
+            
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + (i * 0.1));
+            osc.stop(now + (i * 0.1) + 0.5);
+        });
+    }
+
+    stopMusic() {
+        this.musicActive = false;
+        if (this.schedulerTimer) {
+            clearInterval(this.schedulerTimer);
+            this.schedulerTimer = null;
+        }
+
+        const now = this.ctx.currentTime;
+        this.musicNodes.forEach(node => {
+            if (node.gain) {
+                node.gain.gain.cancelScheduledValues(now);
+                node.gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.0);
+            }
+            if (node.osc) {
+                setTimeout(() => {
+                    try { node.osc.stop(); node.osc.disconnect(); } catch(e) {}
+                }, 1200);
+            }
+        });
+        this.musicNodes = [];
+    }
 }
+
+// ---- Core State (Shared with Audio Engine) ----
+let score = 0;
+let isGameOver = false;
+let currentTarget = null;
 
 const audio = new AudioManager();
 
@@ -250,9 +379,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const hudCitiesLeft = document.getElementById("hud-cities-left");
 
     // ---- Core State ----
-    let score = 0;
-    let isGameOver = false;
-    let currentTarget = null;
     let targetMarker = null;
     let isTransitioning = false;
     let previousInputVal = "";
@@ -564,6 +690,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Survival: timeout penalty (-5 seconds)
             if (gameMode === 'survival') {
+                audio.playSurvivalPenalty();
                 globalTimeMs = Math.max(0, globalTimeMs - 5000);
                 triggerFloatingFeedback('-5.0s', true, 'penalty-text');
                 updateSurvivalClock();
@@ -1002,6 +1129,9 @@ document.addEventListener("DOMContentLoaded", () => {
             attackHistory.push(currentAttack);
         }
 
+        // --- STOP MUSIC ---
+        audio.stopMusic();
+
         // ---- Render End Screen ----
         const titleScoreEl = document.getElementById("title-score");
         const goScoreLabel = document.getElementById("go-score-label");
@@ -1054,7 +1184,7 @@ document.addEventListener("DOMContentLoaded", () => {
             audio.playSurvivalEnd();
 
             // First stat Box 1: Total Targets (integer)
-            statTotalTargets.closest('.metric-box').querySelector('.metric-label').textContent = 'TOTAL TARGETS';
+            statTotalTargets.closest('.metric-box').querySelector('.metric-label').textContent = 'CITIES LINKED';
             statTotalTargets.textContent = attackHistory.filter(a => !a.failed).length.toLocaleString();
 
             const prevBest = loadHighScore('survival');
@@ -1245,6 +1375,7 @@ document.addEventListener("DOMContentLoaded", () => {
         classicModeBtn.addEventListener("click", () => {
             audio.init();
             audio.playUI();
+            audio.startMusic();
             startScreen.classList.add("hidden");
             startGame('classic');
         });
@@ -1254,6 +1385,7 @@ document.addEventListener("DOMContentLoaded", () => {
         survivalModeBtn.addEventListener("click", () => {
             audio.init();
             audio.playUI();
+            audio.startMusic();
             startScreen.classList.add("hidden");
             startGame('survival');
         });
