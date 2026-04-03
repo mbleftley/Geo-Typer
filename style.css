@@ -704,6 +704,59 @@ input[type="text"] {
 #explosion-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 20; }
 .particle { position: absolute; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent-glow); }
 
+/* --- Data Fragments (Juice 2.0) --- */
+.data-fragment {
+    position: absolute;
+    background: var(--accent);
+    box-shadow: 0 0 15px var(--accent-glow);
+    pointer-events: none;
+    opacity: 0.9;
+}
+.frag-rect { width: 8px; height: 3px; }
+.frag-sq { width: 5px; height: 5px; }
+.frag-tri {
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 8px solid var(--accent);
+    background: none;
+    box-shadow: none;
+    filter: drop-shadow(0 0 5px var(--accent-glow));
+}
+
+/* --- Terminal Glitch (Error Juice) --- */
+.terminal-glitch {
+    animation: digitalGlitch 0.15s infinite;
+    position: relative;
+    border-color: var(--danger) !important;
+}
+
+@keyframes digitalGlitch {
+    0% { transform: translateX(0); filter: hue-rotate(0deg) contrast(150%); }
+    20% { transform: translateX(-3px) skewX(2deg); filter: hue-rotate(90deg) brightness(1.5); }
+    40% { transform: translateX(3px) skewX(-2deg); filter: hue-rotate(-90deg); }
+    60% { transform: translateX(-1px); filter: contrast(200%); }
+    80% { transform: translateX(2px) scaleY(1.05); filter: hue-rotate(45deg); opacity: 0.8; }
+    100% { transform: translateX(0); filter: hue-rotate(0deg); }
+}
+
+/* --- Key Pulse (Typing Juice) --- */
+.key-pulse-active {
+    box-shadow: 0 0 30px var(--accent-glow), inset 0 0 15px var(--accent-glow) !important;
+    border-color: #fff !important;
+    transition: none !important;
+}
+
+/* --- Scan Ring (Acquisition Juice) --- */
+.scan-ring {
+    position: absolute;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
 .floating-score-text {
     position: absolute; font-family: var(--font-mono); font-size: 5rem; font-weight: bold; color: var(--type-correct); 
     text-shadow: 0 0 50px rgba(74,222,128,1), 0 0 20px rgba(255,255,255,0.6); pointer-events: none; z-index: 500; transform: translate(-50%, -50%);

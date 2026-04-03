@@ -644,6 +644,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 keystrokeLog: [] 
             };
 
+            // --- JUICE 2.0: Scan Acquisition ---
+            triggerScanPulse(currentTarget.lat, currentTarget.lng);
+
             // Standardized 6.0s per city (Competition Balance)
             currentTime = baseTime;
             
@@ -951,26 +954,67 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!targetMarker) return;
         const point = map.latLngToContainerPoint([currentTarget.lat, currentTarget.lng]);
         
-        const particleCount = 40;
+        const particleCount = 25; // Fewer but higher quality shards
         const particles = [];
+        const types = ['frag-rect', 'frag-sq', 'frag-tri'];
+
         for (let i = 0; i < particleCount; i++) {
             const p = document.createElement("div");
-            p.classList.add("particle");
+            const type = types[Math.floor(Math.random() * types.length)];
+            p.classList.add("data-fragment", type);
+            
+            // Randomly vary color slightly (Cyan to Emerald)
+            if (Math.random() > 0.5) {
+                p.style.backgroundColor = '#4ade80';
+                p.style.boxShadow = '0 0 10px rgba(74, 222, 128, 0.5)';
+                if (type === 'frag-tri') p.style.borderBottomColor = '#4ade80';
+            }
+
             p.style.left = `${point.x}px`;
             p.style.top = `${point.y}px`;
             explosionContainer.appendChild(p);
             particles.push(p);
         }
 
+        // Professional Physics: Fast burst followed by floating drift
         anime({
             targets: particles,
-            translateX: () => anime.random(-150, 150),
-            translateY: () => anime.random(-150, 150),
-            scale: [1, 0],
+            translateX: () => anime.random(-250, 250),
+            translateY: () => anime.random(-250, 250),
+            rotate: () => anime.random(-360, 360),
+            scale: [
+                { value: [0, 1.5], duration: 100, easing: 'easeOutBack' },
+                { value: 0, duration: 2500, delay: 200, easing: 'easeInQuad' }
+            ],
+            opacity: [
+                { value: 1, duration: 100 },
+                { value: 0, duration: 2000, delay: 500 }
+            ],
+            easing: 'easeOutExpo',
+            duration: 2500,
+            complete: () => { particles.forEach(p => p.remove()); }
+        });
+    }
+
+    function triggerScanPulse(lat, lng) {
+        const point = map.latLngToContainerPoint([lat, lng]);
+        const ring = document.createElement("div");
+        ring.className = "scan-ring";
+        ring.style.left = `${point.x}px`;
+        ring.style.top = `${point.y}px`;
+        ring.style.width = "20px";
+        ring.style.height = "20px";
+        explosionContainer.appendChild(ring);
+
+        anime({
+            targets: ring,
+            width: [20, 400],
+            height: [20, 400],
             opacity: [1, 0],
+            borderWidth: [4, 0],
             easing: 'easeOutExpo',
             duration: 1000,
-            complete: () => { particles.forEach(p => p.remove()); }
+            complete: () => ring.remove()
         });
     }
 
@@ -1018,20 +1062,20 @@ document.addEventListener("DOMContentLoaded", () => {
         .add({
             targets: fct,
             translateX: '-50%',
-            translateY: [-20, -150],
+            translateY: [-20, -120],
             opacity: [0, 1],
-            scale: [0.5, 1.4],
-            easing: 'easeOutElastic(1.2, .5)',
+            scale: [0.2, 1.2],
+            easing: 'easeOutElastic(1.4, .6)', // More "boing"
             duration: 800
         })
         .add({
             targets: fct,
             translateX: '-50%',
-            translateY: [-150, -300],
+            translateY: [-120, -250],
             opacity: [1, 0],
-            scale: [1.4, 0.9],
-            easing: 'easeInSine',
-            duration: 500,
+            scale: [1.2, 0.8],
+            easing: 'easeInBack', // Snappy exit
+            duration: 600,
             complete: () => fct.remove()
         });
 
