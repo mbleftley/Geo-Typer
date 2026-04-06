@@ -616,7 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const zoomLevel = 5 + Math.floor(Math.random() * 3);
-        map.flyTo([currentTarget.lat, currentTarget.lng], zoomLevel, { animate: true, duration: 1.5 });
+        map.flyTo([currentTarget.lat, currentTarget.lng], zoomLevel, { animate: true, duration: 0.8 });
 
         setTimeout(() => {
             if (isGameOver) return;
@@ -632,14 +632,17 @@ document.addEventListener("DOMContentLoaded", () => {
             typingInput.disabled = false;
             updateTypingOverlay("");
             
+            // Allow typing immediately upon acquisition
+            isTransitioning = false;
+            typingInput.focus();
+
             anime({
                 targets: '#typing-overlay span',
                 translateY: [-20, 0],
                 opacity: [0, 1],
-                delay: anime.stagger(50),
+                delay: anime.stagger(20), // Snappier reveal
                 easing: 'easeOutQuad',
-                duration: 400,
-                complete: () => { typingInput.focus(); }
+                duration: 300
             });
 
             // Initialize Telemetry
@@ -668,8 +671,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     startGlobalCountdown();
                 }
             }
-            isTransitioning = false;
-        }, 1600);
+        }, 900);
     }
 
     // ---- Per-City Timer ----
