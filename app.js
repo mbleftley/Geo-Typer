@@ -1207,7 +1207,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         gameOverPanel.classList.add("hidden");
         gameOverPanel.classList.remove("minimized-panel");
-        if (toggleMapBtn) toggleMapBtn.innerHTML = `VIEW MAP <span style="font-family: monospace;">[ _ ]</span>`;
+        if (toggleMapBtn) toggleMapBtn.innerHTML = `VIEW MAP`;
         
         activeTerminal.classList.remove("hidden");
         document.getElementById("top-hud").classList.remove("hidden");
@@ -1507,10 +1507,11 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleMapBtn.addEventListener("click", () => {
             audio.playUI();
             gameOverPanel.classList.toggle("minimized-panel");
-            if (gameOverPanel.classList.contains("minimized-panel")) {
-                toggleMapBtn.innerHTML = `SHOW STATS <span style="font-family: monospace;">[ &uarr; ]</span>`;
+            const isMinimized = gameOverPanel.classList.contains("minimized-panel");
+            if (isMinimized) {
+                toggleMapBtn.innerHTML = `SHOW STATS`;
             } else {
-                toggleMapBtn.innerHTML = `VIEW MAP <span style="font-family: monospace;">[ _ ]</span>`;
+                toggleMapBtn.innerHTML = `VIEW MAP`;
             }
         });
     }
@@ -1567,6 +1568,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 globalPauseStart = 0;
             }
+        }
+    });
+
+    // ---- Mobile Keyboard & Viewport Fixes ----
+    function adjustForViewport() {
+        if (!window.visualViewport) return;
+        const uiLayer = document.querySelector('.ui-layer');
+        if (uiLayer) {
+            // Force the layer height to match visual viewport to fit above the keyboard
+            uiLayer.style.height = window.visualViewport.height + 'px';
+            // Align it if the browser scrolls automatically
+            uiLayer.style.transform = `translateY(${window.visualViewport.offsetTop}px)`;
+        }
+    }
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", adjustForViewport);
+        window.visualViewport.addEventListener("scroll", adjustForViewport);
+        adjustForViewport();
+    }
+
+    document.addEventListener("touchstart", (e) => {
+        if (!isGameOver && !isTransitioning && currentTarget && e.target !== toggleMapBtn && e.target !== restartBtn) {
+            typingInput.focus();
         }
     });
 

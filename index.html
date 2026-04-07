@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geo-Typer</title>
     <link rel="icon" href="favicon.png" type="image/png">
-    <meta name="description" content="GEO-TYPER — an arcade-style global city typing game. Race the clock, survive the onslaught, and prove your precision.">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <meta name="description"
+        content="GEO-TYPER — an arcade-style global city typing game. Race the clock, survive the onslaught, and prove your precision.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div id="map-viz"></div>
-    
+
     <div id="audio-toggle" class="audio-toggle glass-panel" title="Toggle Audio (M)">
         <span id="audio-icon">🔊</span>
     </div>
@@ -27,14 +31,14 @@
                     <span id="score-display" class="hud-value">0</span>
                 </div>
             </div>
-            
+
             <div class="hud-module glass-panel mod-center">
                 <div class="hud-item hud-center">
                     <h2>TARGET: <span id="target-name">WAITING</span></h2>
                     <div class="hud-sub" id="target-country">Scanning for coordinates...</div>
                 </div>
             </div>
-            
+
             <div class="hud-module glass-panel mod-right" id="hud-right">
                 <div class="hud-item hud-right" id="hud-right-block">
                     <!-- Classic Mode: shows survival time elapsed -->
@@ -59,17 +63,18 @@
                 </div>
             </div>
         </main>
-        
+
         <!-- ===================== START / MODE SELECT SCREEN ===================== -->
         <aside class="game-over-panel panel-with-logo" id="start-screen">
             <div class="sidebar-header" style="padding: 0;">
                 <img src="favicon.png" alt="Geo-Typer Logo" class="main-logo">
-                
-                
+
+
                 <p class="panel-instructions">
                     &gt; INSTRUCTION: TYPE THE TARGETED CITY NAMES AS THEY APPEAR.<br>
                     &gt; PROTOCOL: COMPLETE EACH WORD BEFORE THE RADIUS TIMER EXPIRES.<br>
-                    <span style="color: var(--danger);">&gt; WARNING: ACCURACY IMPACTS BOTH SCORE AND SYSTEM UPTIME.</span>
+                    <span style="color: var(--danger);">&gt; WARNING: ACCURACY IMPACTS BOTH SCORE AND SYSTEM
+                        UPTIME.</span>
                 </p>
 
                 <!-- Mode Cards -->
@@ -78,7 +83,8 @@
                     <div class="mode-card" id="mode-card-classic">
                         <div class="mode-card-icon">🎯</div>
                         <div class="mode-card-title">20-CITY RACE</div>
-                        <div class="mode-card-desc">Fastest clear of 20 strategic targets. One mistake ends the mission.</div>
+                        <div class="mode-card-desc">Fastest clear of 20 strategic targets. One mistake ends the mission.
+                        </div>
                         <div class="mode-card-best" id="classic-best-display">HIGHSCORE: 0</div>
                         <button id="classic-mode-btn" class="mode-btn">ENGAGE</button>
                     </div>
@@ -87,7 +93,8 @@
                     <div class="mode-card mode-card-survival" id="mode-card-survival">
                         <div class="mode-card-icon">⚡</div>
                         <div class="mode-card-title">SURVIVAL</div>
-                        <div class="mode-card-desc">Master speed and accuracy against a global countdown to stay alive.</div>
+                        <div class="mode-card-desc">Master speed and accuracy against a global countdown to stay alive.
+                        </div>
                         <div class="mode-card-best" id="survival-best-display">BEST TIME: 0:00</div>
                         <button id="survival-mode-btn" class="mode-btn mode-btn-survival">INITIATE</button>
                     </div>
@@ -98,21 +105,22 @@
                 <a href="https://buymeacoffee.com/mbleftleyi" target="_blank" style="text-decoration: none;">
                     <button class="support-btn" style="width: 250px;">☕ BUY ME A COFFEE</button>
                 </a>
-                <div class="dev-attribution">SYSTEM DEVELOPED BY <a href="https://x.com/MBLExperiment" target="_blank" class="dev-link">MBLXPERIMENT</a></div>
+                <div class="dev-attribution">SYSTEM DEVELOPED BY <a href="https://x.com/MBLExperiment" target="_blank"
+                        class="dev-link">MBLXPERIMENT</a></div>
             </div>
         </aside>
 
         <!-- ===================== GAME OVER PANEL ===================== -->
         <aside class="game-over-panel hidden" id="game-over-panel">
-            <button id="toggle-map-btn" class="toggle-map-btn">VIEW MAP <span style="font-family: monospace;">[ _ ]</span></button>
-            
+            <button id="toggle-map-btn" class="toggle-map-btn">VIEW MAP</button>
+
             <div class="sidebar-header" id="go-header">
                 <!-- New Record Badge -->
                 <div id="new-record-badge" class="new-record-badge hidden">⚡ NEW RECORD ⚡</div>
                 <div id="title-score" class="massive-score">0</div>
                 <div id="go-score-label" class="score-subtext" style="margin-bottom: 30px;">TOTAL SCORE</div>
             </div>
-            
+
             <div class="metrics-grid" id="go-metrics">
                 <div class="metric-box">
                     <span class="metric-label" id="metric-label-time">TIME PLAYED</span>
@@ -156,4 +164,5 @@
     <script src="cities.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>
