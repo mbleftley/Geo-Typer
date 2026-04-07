@@ -1575,11 +1575,26 @@ document.addEventListener("DOMContentLoaded", () => {
     function adjustForViewport() {
         if (!window.visualViewport) return;
         const uiLayer = document.querySelector('.ui-layer');
+        const mapElement = document.getElementById('map-viz');
+        const offset = window.visualViewport.offsetTop;
+        const height = window.visualViewport.height;
+
         if (uiLayer) {
             // Force the layer height to match visual viewport to fit above the keyboard
-            uiLayer.style.height = window.visualViewport.height + 'px';
+            uiLayer.style.height = height + 'px';
             // Align it if the browser scrolls automatically
-            uiLayer.style.transform = `translateY(${window.visualViewport.offsetTop}px)`;
+            uiLayer.style.transform = `translateY(${offset}px)`;
+        }
+
+        // Dynamically crunch the map drawing height so Leaflet recenters cleanly!
+        if (mapElement) {
+            mapElement.style.height = height + 'px';
+            mapElement.style.transform = `translateY(${offset}px)`;
+            
+            // Recompute map center natively because of the height change
+            if (typeof map !== 'undefined') {
+                map.invalidateSize({ animate: false });
+            }
         }
     }
 
