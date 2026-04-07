@@ -969,6 +969,10 @@ input[type="text"] {
         width: 48%;
         flex: 0 0 calc(50% - 3px);
     }
+    .hud-left, .hud-right {
+        align-items: center;
+        text-align: center;
+    }
     .mod-center {
         width: 100%;
         max-width: none;
