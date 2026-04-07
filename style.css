@@ -31,21 +31,21 @@ body {
     width: 200px;
     height: 200px;
     border-radius: 25px;
-    margin-bottom: 30px;
+    margin-bottom: 0;
     box-shadow: 0 0 40px var(--accent-glow);
     border: 2px solid var(--accent);
     object-fit: cover;
     position: absolute;
-    top: -100px;
+    top: 0;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     z-index: 100;
     animation: logoGlow 4s infinite ease-in-out;
 }
 
 @keyframes logoGlow {
-    0%, 100% { box-shadow: 0 0 40px var(--accent-glow); transform: translateX(-50%) scale(1); }
-    50% { box-shadow: 0 0 70px var(--accent-glow); transform: translateX(-50%) scale(1.03); }
+    0%, 100% { box-shadow: 0 0 40px var(--accent-glow); transform: translate(-50%, -50%) scale(1); }
+    50% { box-shadow: 0 0 70px var(--accent-glow); transform: translate(-50%, -50%) scale(1.03); }
 }
 
 #map-viz {
@@ -475,7 +475,20 @@ input[type="text"] {
 }
 
 .panel-with-logo {
-    padding-top: 150px;
+    padding-top: 120px;
+    max-height: 75vh;
+    margin-top: 50px;
+}
+
+.start-scroll-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.start-scroll-container::-webkit-scrollbar {
+    display: none;
 }
 
 .panel-instructions {
@@ -897,8 +910,8 @@ input[type="text"] {
 }
 
 @keyframes logoGlowMobile {
-    0%, 100% { box-shadow: 0 0 40px var(--accent-glow); transform: scale(1); }
-    50% { box-shadow: 0 0 70px var(--accent-glow); transform: scale(1.03); }
+    0%, 100% { box-shadow: 0 0 40px var(--accent-glow); transform: translate(-50%, -50%) scale(1); }
+    50% { box-shadow: 0 0 70px var(--accent-glow); transform: translate(-50%, -50%) scale(1.03); }
 }
 
 @media (max-width: 950px) {
@@ -925,19 +938,11 @@ input[type="text"] {
         display: none;
     }
     .game-over-panel.panel-with-logo {
-        padding-top: 20px;
-        max-height: 85vh;
-        overflow-y: auto;
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-    .game-over-panel.panel-with-logo::-webkit-scrollbar {
-        display: none;
+        padding-top: 75px; /* room for the 60px interior half of the 120px mobile logo */
+        max-height: 75vh;
+        margin-top: 30px;
     }
     .main-logo {
-        position: static;
-        display: block;
-        margin: 0 auto 20px auto;
         width: 120px;
         height: 120px;
         animation: logoGlowMobile 4s infinite ease-in-out;
